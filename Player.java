@@ -151,4 +151,39 @@ public class Player extends watermelon.sim.Player {
 		}
 		return seedsInRegion;
 	}
+	double calculateFitness(ArrayList<seed> seedlist,double s) {
+		double total = 0;
+		for (int i = 0; i < seedlist.size(); i++) {
+			double score;
+			double chance = 0.0;
+			double totaldis = 0.0;
+			double difdis = 0.0;
+			for (int j = 0; j < seedlist.size(); j++) {
+				if (j != i) {
+					totaldis = totaldis
+							+ Math.pow(
+									distanceseed(seedlist.get(i),
+											seedlist.get(j)), -2);
+				}
+			}
+			for (int j = 0; j < seedlist.size(); j++) {
+				if (j != i
+						&& ((seedlist.get(i).tetraploid && !seedlist.get(j).tetraploid) || (!seedlist
+								.get(i).tetraploid && seedlist.get(j).tetraploid))) {
+					difdis = difdis
+							+ Math.pow(
+									distanceseed(seedlist.get(i),
+											seedlist.get(j)), -2);
+				}
+			}
+			chance = difdis / totaldis;
+			score = chance + (1 - chance) * s;
+			total = total + score;
+		}
+		return total;
+	}
+	
+	static double distanceseed(seed a, seed b) {
+		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
+	}
 }
