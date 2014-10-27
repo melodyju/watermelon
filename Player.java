@@ -10,6 +10,15 @@ public class Player extends watermelon.sim.Player {
 	static double distowall = 2.1;
 	static double distotree = 2.2;
 	static double distoseed = 1.01;
+	
+	static double SEED_RADIUS = 1.0;
+	
+	double boardWidth;
+	double boardHeight;
+	
+	enum Region {
+		TOP, BOTTOM, LEFT, RIGHT
+	}
 
 	public void init() {
 
@@ -81,5 +90,65 @@ public class Player extends watermelon.sim.Player {
 			}
 		}
 		return seedlist;
+	}
+	
+	public ArrayList<ArrayList<seed>> getChildrenFromParentBoards(ArrayList<seed> board1, ArrayList<seed> board2) {
+		ArrayList<ArrayList<seed>> childrenBoards = new ArrayList<ArrayList<seed>>();
+		
+		ArrayList<seed> child1 = new ArrayList<seed>();
+		child1.addAll(getSeedsInRegion(board1, Region.TOP));
+		child1.addAll(getSeedsInRegion(board2, Region.BOTTOM));
+		
+		ArrayList<seed> child2 = new ArrayList<seed>();
+		child1.addAll(getSeedsInRegion(board1, Region.BOTTOM));
+		child1.addAll(getSeedsInRegion(board2, Region.TOP));
+		
+		ArrayList<seed> child3 = new ArrayList<seed>();
+		child1.addAll(getSeedsInRegion(board1, Region.LEFT));
+		child1.addAll(getSeedsInRegion(board2, Region.RIGHT));
+		
+		ArrayList<seed> child4 = new ArrayList<seed>();
+		child1.addAll(getSeedsInRegion(board1, Region.RIGHT));
+		child1.addAll(getSeedsInRegion(board2, Region.LEFT));
+		
+		childrenBoards.add(child1);
+		childrenBoards.add(child2);
+		childrenBoards.add(child3);
+		childrenBoards.add(child4);
+		
+		return childrenBoards;
+	}
+	
+	public ArrayList<seed> getSeedsInRegion(ArrayList<seed> board, Region region) {
+		ArrayList<seed> seedsInRegion = new ArrayList<seed>();
+		for (seed nextSeed : board) {
+			switch(region) {
+				case TOP:
+					if (nextSeed.y <= (this.boardHeight - SEED_RADIUS) / 2.0) {
+						seedsInRegion.add(nextSeed);
+					}
+					break;
+				case BOTTOM:
+					if (nextSeed.y >= (this.boardHeight + SEED_RADIUS) / 2.0) {
+						seedsInRegion.add(nextSeed);
+					}
+					break;
+				case LEFT:
+					if (nextSeed.x <= (this.boardWidth - SEED_RADIUS) / 2.0) {
+						seedsInRegion.add(nextSeed);
+					}
+					break;
+				case RIGHT:
+					if (nextSeed.x >= (this.boardWidth + SEED_RADIUS) / 2.0) {
+						seedsInRegion.add(nextSeed);
+					}
+					break;
+				default:
+					System.out.println("getSeedsInRegion is broken :/");
+					break;
+					
+			}
+		}
+		return seedsInRegion;
 	}
 }
