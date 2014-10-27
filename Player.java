@@ -21,7 +21,7 @@ public class Player extends watermelon.sim.Player {
 	}
 
 	public void init() {
-
+		
 	}
 
 	static double distance(seed tmp, Pair pair) {
