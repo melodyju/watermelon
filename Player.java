@@ -44,6 +44,7 @@ public class Player extends watermelon.sim.Player {
 	public ArrayList<seed> generateRandomBoard(ArrayList<Pair> treelist, double width, double length, double s) {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
 		for (double i = distowall; i < width - distowall; i = i + distoseed) {
+		//	Random horizen = new Random();
 			for (double j = distowall; j < length - distowall; j = j + distoseed) {
 				Random random = new Random();
 				seed tmp;
@@ -151,6 +152,7 @@ public class Player extends watermelon.sim.Player {
 		}
 		return seedsInRegion;
 	}
+	
 	double calculateFitness(ArrayList<seed> seedlist,double s) {
 		double total = 0;
 		for (int i = 0; i < seedlist.size(); i++) {
