@@ -50,7 +50,8 @@ public class Player extends watermelon.sim.Player {
 		}
 
 		Individual selectParent() {
-			return rouletteWheelSelection();
+			// return rouletteWheelSelection();
+			return probabilisticSelection();
 		}
 
 		Individual rouletteWheelSelection() {
@@ -61,6 +62,19 @@ public class Player extends watermelon.sim.Player {
 				rnd -= population.get(j).fitness;
 			}
 			return population.get(j-1);
+		}
+
+		Individual probabilisticSelection() {
+			Individual chosenOne = null;
+			Random random = new Random();
+			while (chosenOne == null) {
+				int candidateIndex = random.nextInt(generationSize);
+				Individual candidate = population.get(candidateIndex);
+				if (candidate.chosen(totalFitness)) {
+					chosenOne = candidate;
+				}
+			}
+			return chosenOne;
 		}
 
 		double calculateTotalFitness() {
@@ -184,6 +198,18 @@ public class Player extends watermelon.sim.Player {
 			children.add(new Individual (child4));
 			
 			return children;
+		}
+
+		boolean chosen(double totalFitness) {
+			double proportion = this.fitness / totalFitness;
+			Random random = new Random();
+			double d = random.nextDouble();
+			if (d <= proportion) {
+				return true;
+			}
+			else {
+				return false;
+			}
 		}
 	}
 
