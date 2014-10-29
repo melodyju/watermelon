@@ -22,10 +22,6 @@ public class Player extends watermelon.sim.Player {
 	private static final int generationSize = 20;
 	private static final int numGenerations = 5;
 
-	enum Region {
-		TOP, BOTTOM, LEFT, RIGHT
-	}
-
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Generation and Individual classes
 
@@ -322,34 +318,11 @@ public class Player extends watermelon.sim.Player {
 		return seedlist;
 	}
 	
-	public ArrayList<seed> getSeedsInRegion(ArrayList<seed> board, Region region) {
+	public ArrayList<seed> getSeedsInRegion(ArrayList<seed> board, double minX, double maxX, double minY, double maxY) {
 		ArrayList<seed> seedsInRegion = new ArrayList<seed>();
 		for (seed nextSeed : board) {
-			switch(region) {
-				case TOP:
-					if (nextSeed.y <= (this.boardHeight) / 2.0) {
-						seedsInRegion.add(nextSeed);
-					}
-					break;
-				case BOTTOM:
-					if (nextSeed.y >= (this.boardHeight) / 2.0) {
-						seedsInRegion.add(nextSeed);
-					}
-					break;
-				case LEFT:
-					if (nextSeed.x <= (this.boardWidth) / 2.0) {
-						seedsInRegion.add(nextSeed);
-					}
-					break;
-				case RIGHT:
-					if (nextSeed.x >= (this.boardWidth) / 2.0) {
-						seedsInRegion.add(nextSeed);
-					}
-					break;
-				default:
-					System.out.println("getSeedsInRegion is broken :/");
-					break;
-					
+			if (nextSeed.x >= minX && nextSeed.x < maxX && nextSeed.y >= minY && nextSeed.y < maxY) {
+				seedsInRegion.add(nextSeed);
 			}
 		}
 		return seedsInRegion;
