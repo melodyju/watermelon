@@ -9,7 +9,7 @@ import watermelon.sim.seed;
 public class Player extends watermelon.sim.Player {
 	static double distowall = 2.1;
 	static double distotree = 2.2;
-	static double distoseed = 1.01;
+	static double distoseed = 2.01;
 	static double SEED_RADIUS = 1.0;
 
 	static double boardWidth;
@@ -275,7 +275,7 @@ public class Player extends watermelon.sim.Player {
 
 	public ArrayList<seed> generateRandomBoard() {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
-		for (double i = distowall; i < boardWidth - distowall; i = i + distoseed) {
+	/*for (double i = distowall; i < boardWidth - distowall; i = i + distoseed) {
 			for (double j = distowall; j < boardHeight - distowall; j = j + distoseed) {
 				Random random = new Random();
 				seed tmp;
@@ -294,7 +294,12 @@ public class Player extends watermelon.sim.Player {
 					seedlist.add(tmp);
 				}
 			}
-		}
+		}*/
+		ArrayList<Position> trees = new ArrayList<Position>();
+		for (Position p : trees)
+			trees.add(new Position(p.x, p.y));
+		ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
+		
 
 		return generateRandomBoardFromPositions(seedlist);
 	}
