@@ -22,7 +22,7 @@ public class Player extends watermelon.sim.Player {
 
 	private static final int generationSize = 20;
 	private static final int numGenerations = 5;
-	private static final int childPolicy = 10;
+	private static final int childPolicy = 50;
 
 	enum Region {
 		TOP, BOTTOM, LEFT, RIGHT
@@ -197,7 +197,8 @@ public class Player extends watermelon.sim.Player {
 				int yBoundary = random.nextInt((int)boardHeight);
 				ArrayList<seed> board = new ArrayList<seed>();
 				board.addAll(getSeedsInRegion(board1, 0, xBoundary, 0, yBoundary));
-				board.addAll(getSeedsInRegion(board2, xBoundary, boardWidth, yBoundary, boardHeight));
+				board.addAll(getSeedsInRegion(board2, xBoundary, boardWidth, 0, boardHeight));
+				board.addAll(getSeedsInRegion(board2, 0, xBoundary, yBoundary, boardHeight));
 
 				children.add(new Individual(board));
 			}
