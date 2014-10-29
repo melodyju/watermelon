@@ -18,9 +18,15 @@ public class Player extends watermelon.sim.Player {
 	static ArrayList<Pair> treeList;
 
 	static int k;
+	static Individual best;
 
 	private static final int generationSize = 20;
 	private static final int numGenerations = 5;
+	private static final int childPolicy = 10;
+
+	enum Region {
+		TOP, BOTTOM, LEFT, RIGHT
+	}
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Generation and Individual classes
@@ -166,32 +172,33 @@ public class Player extends watermelon.sim.Player {
 			return total;
 		}
 
+		// void mutate(Individual parent1, Individual parent2) {
+		// 	Random random = new Random();
+		// 	int patches = 
+		// }
+
 		ArrayList<Individual> reproduce(Individual parent2) {
 			ArrayList<Individual> children = new ArrayList<Individual>();
 
 			ArrayList<seed> board1 = this.board;
 			ArrayList<seed> board2 = parent2.board;
 
-			ArrayList<seed> child1 = new ArrayList<seed>();
-			child1.addAll(getSeedsInRegion(board1, Region.TOP));
-			child1.addAll(getSeedsInRegion(board2, Region.BOTTOM));
-			
-			ArrayList<seed> child2 = new ArrayList<seed>();
-			child2.addAll(getSeedsInRegion(board1, Region.BOTTOM));
-			child2.addAll(getSeedsInRegion(board2, Region.TOP));
-			
-			ArrayList<seed> child3 = new ArrayList<seed>();
-			child3.addAll(getSeedsInRegion(board1, Region.LEFT));
-			child3.addAll(getSeedsInRegion(board2, Region.RIGHT));
-			
-			ArrayList<seed> child4 = new ArrayList<seed>();
-			child4.addAll(getSeedsInRegion(board1, Region.RIGHT));
-			child4.addAll(getSeedsInRegion(board2, Region.LEFT));
-			
-			children.add(new Individual(child1));
-			children.add(new Individual(child2));
-			children.add(new Individual(child3));
-			children.add(new Individual (child4));
+			Random random = new Random();
+
+			for (int i = 0; i < childPolicy; i++) {
+				//randomly select which parent is 1 and which parent is 2
+				int swap = random.nextInt(2);
+				if (swap == 1) {
+					board1 = parent2.board;
+					board2 = this.board;
+				}
+				int xBoundary = random.nextInt((int)this.boardWidth);
+				int yBoundary = random.nextInt((int)this.boardHeight);
+				ArrayList<seed> board = new ArrayList<seed>();
+				board.addAll(getSeedsInRegion(board1, 0, xBoundary, 0, yBoundary));
+				board.addAll(getSeedsInRegion(board2, xBoundary, this.boardWidth, yBoundary, this.boardHeight));
+				children.add(new Individual(board));
+			}
 			
 			return children;
 		}
@@ -220,6 +227,8 @@ public class Player extends watermelon.sim.Player {
 		this.s = s;
 		this.treeList = treelist;
 
+		this.best = new Individual();
+
 		Individual winner = runGeneticAlgorithm();
 		return winner.board;
 	}
@@ -239,6 +248,11 @@ public class Player extends watermelon.sim.Player {
 			children = new Generation(parents);
 
 			k++;
+			// Check to see if the fittest of this generation is fitter than the GOAT
+			Individual fittestChild = children.fittestIndividual(children.population);
+			if (fittestChild.fitness > best.fitness) {
+				best = fittestChild;
+			}
 			// Children become the parents of the next generation
 			parents = children;
 		}
@@ -327,6 +341,7 @@ public class Player extends watermelon.sim.Player {
 		}
 		return seedsInRegion;
 	}
+	
 	
 	static double distanceBetweenSeeds(seed a, seed b) {
 		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
