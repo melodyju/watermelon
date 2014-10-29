@@ -21,8 +21,8 @@ public class Player extends watermelon.sim.Player {
 	static Individual best;
 
 	private static final int generationSize = 20;
-	private static final int numGenerations = 5;
-	private static final int childPolicy = 50;
+	private static final int numGenerations = 10;
+	private static final int childPolicy = 15;
 
 	enum Region {
 		TOP, BOTTOM, LEFT, RIGHT
@@ -261,7 +261,7 @@ public class Player extends watermelon.sim.Player {
 		}
 
 		// Return the fittest person in the most current generation
-		return children.fittestIndividual(children.population);
+		return best;
 	}
 
 	public boolean shouldTerminate() {
@@ -302,13 +302,13 @@ public class Player extends watermelon.sim.Player {
 		ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
 		
 
-		return generateRandomBoardFromPositions(seedlist);
+		return generateRandomBoardFromPositions(locations);
 	}
 
-	public ArrayList<seed> generateRandomBoardFromPositions(ArrayList<seed> positions) {
+	public ArrayList<seed> generateRandomBoardFromPositions(ArrayList<Position> positions) {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
 		Random random = new Random();
-		for (seed position : positions) {
+		for (Position position : positions) {
 			double x = position.x;
 			double y = position.y;
 			// int identity = random.nextInt(3);
