@@ -192,11 +192,11 @@ public class Player extends watermelon.sim.Player {
 					board1 = parent2.board;
 					board2 = this.board;
 				}
-				int xBoundary = random.nextInt((int)this.boardWidth);
-				int yBoundary = random.nextInt((int)this.boardHeight);
+				int xBoundary = random.nextInt((int)boardWidth);
+				int yBoundary = random.nextInt((int)boardHeight);
 				ArrayList<seed> board = new ArrayList<seed>();
 				board.addAll(getSeedsInRegion(board1, 0, xBoundary, 0, yBoundary));
-				board.addAll(getSeedsInRegion(board2, xBoundary, this.boardWidth, yBoundary, this.boardHeight));
+				board.addAll(getSeedsInRegion(board2, xBoundary, boardWidth, yBoundary, boardHeight));
 				children.add(new Individual(board));
 			}
 			
