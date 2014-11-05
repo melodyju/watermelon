@@ -20,8 +20,8 @@ public class Player extends watermelon.sim.Player {
 	static int k;
 	static Individual best;
 
-	private static final int generationSize = 20;
-	private static final int numGenerations = 10;
+	private static final int generationSize = 1;
+	private static final int numGenerations = 0;
 	private static final int childPolicy = 15;
 
 	enum Region {
@@ -143,7 +143,7 @@ public class Player extends watermelon.sim.Player {
 		}
 
 		Individual() {
-			this.board = generateRandomBoard();
+			this.board = generateRandomBoard(treeList);
 			fitness = calculateFitness();
 		}
 
@@ -274,30 +274,11 @@ public class Player extends watermelon.sim.Player {
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Helper methods
 
-	public ArrayList<seed> generateRandomBoard() {
+	public ArrayList<seed> generateRandomBoard(ArrayList<Pair> treelist) {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
-	/*for (double i = distowall; i < boardWidth - distowall; i = i + distoseed) {
-			for (double j = distowall; j < boardHeight - distowall; j = j + distoseed) {
-				Random random = new Random();
-				seed tmp;
-				if (random.nextInt(2) == 0)
-					tmp = new seed(i, j, false);
-				else
-					tmp = new seed(i, j, true);
-				boolean add = true;
-				for (int f = 0; f < treeList.size(); f++) {
-					if (distance(tmp, treeList.get(f)) < distotree) {
-						add = false;
-						break;
-					}
-				}
-				if (add) {
-					seedlist.add(tmp);
-				}
-			}
-		}*/
+
 		ArrayList<Position> trees = new ArrayList<Position>();
-		for (Position p : trees)
+		for (Pair p : treeList)
 			trees.add(new Position(p.x, p.y));
 		ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
 		
