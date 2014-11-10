@@ -7,10 +7,15 @@ import watermelon.sim.Point;
 import watermelon.sim.seed;
 
 public class Player extends watermelon.sim.Player {
-	static double distowall = 2.1;
-	static double distotree = 2.2;
-	static double distoseed = 2.01;
+	// static double distowall = 2.1;
+	// static double distotree = 2.2;
+	// static double distoseed = 1.01;
+	static final double distowall = 1.0;
+	static final double distotree = 2.0;
+	static final double distoseed = 2.0;
 	static double SEED_RADIUS = 1.0;
+	static double MARGIN = 2.0;
+	static int MUTATION_PROBABILITY = 5; // 1 in every *MUTATION_PROBABILITY* seeds within the margin gets mutated
 
 	static double boardWidth;
 	static double boardHeight;
@@ -20,13 +25,10 @@ public class Player extends watermelon.sim.Player {
 	static int k;
 	static Individual best;
 
-	private static final int generationSize = 1;
-	private static final int numGenerations = 0;
-	private static final int childPolicy = 15;
-
-	enum Region {
-		TOP, BOTTOM, LEFT, RIGHT
-	}
+	private static final int generationSize = 20;
+	private static final int numGenerations = 50;
+	private static final int childPolicy = 50;
+	private static final int mutationProbability = 5; // 1 in *mutationProbability* boundary seeds will be flipped
 
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Generation and Individual classes
@@ -143,7 +145,7 @@ public class Player extends watermelon.sim.Player {
 		}
 
 		Individual() {
-			this.board = generateRandomBoard(treeList);
+			this.board = generateRandomBoard();
 			fitness = calculateFitness();
 		}
 
@@ -172,11 +174,6 @@ public class Player extends watermelon.sim.Player {
 			return total;
 		}
 
-		// void mutate(Individual parent1, Individual parent2) {
-		// 	Random random = new Random();
-		// 	int patches = 
-		// }
-
 		ArrayList<Individual> reproduce(Individual parent2) {
 			ArrayList<Individual> children = new ArrayList<Individual>();
 
@@ -200,11 +197,30 @@ public class Player extends watermelon.sim.Player {
 				board.addAll(getSeedsInRegion(board2, xBoundary, boardWidth, 0, boardHeight));
 				board.addAll(getSeedsInRegion(board2, 0, xBoundary, yBoundary, boardHeight));
 
+				// Add mutations?
+				// Mutations along boundaries 
+				// board = mutate(board, xBoundary, yBoundary);
+
 				children.add(new Individual(board));
 			}
 			
 			return children;
 		}
+
+		// ArrayList<seed> mutate(ArrayList<seed> board, int xBoundary, int yBoundary) {
+		// 	Random random = new Random();
+		// 	int ticket;
+		// 	for (seed s : board) {
+		// 		if (Math.abs(s.x - xBoundary) <= 3 || Math.abs(s.y - yBoundary) <= 3) {
+		// 			// Seed near boundary
+		// 			ticket = random.nextInt(mutationProbability + 1);
+		// 			if (ticket == mutationProbability) {
+		// 				s.tetraploid = !(s.tetraploid);
+		// 			}
+		// 		}
+		// 	}
+		// 	return board;
+		// }
 
 		boolean chosen(double totalFitness) {
 			double proportion = this.fitness / totalFitness;
@@ -274,7 +290,7 @@ public class Player extends watermelon.sim.Player {
 	/////////////////////////////////////////////////////////////////////////////////////
 	// Helper methods
 
-	public ArrayList<seed> generateRandomBoard(ArrayList<Pair> treelist) {
+	public ArrayList<seed> generateRandomBoard() {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
 
 		ArrayList<Position> trees = new ArrayList<Position>();
@@ -324,13 +340,31 @@ public class Player extends watermelon.sim.Player {
 	public ArrayList<seed> getSeedsInRegion(ArrayList<seed> board, double minX, double maxX, double minY, double maxY) {
 		ArrayList<seed> seedsInRegion = new ArrayList<seed>();
 		for (seed nextSeed : board) {
-			if (nextSeed.x >= minX && nextSeed.x < maxX && nextSeed.y >= minY && nextSeed.y < maxY) {
+			double x = nextSeed.x;
+			double y = nextSeed.y;
+			if (x >= minX && x < maxX && y >= minY && y < maxY) {
+
+				// Mutate seeds close to boundaries
+				// if (Math.abs(x - minX) <= MARGIN || Math.abs(x - maxX) <= MARGIN || 
+				// 	Math.abs(y - minY) <= MARGIN || Math.abs(y - maxY) <= MARGIN) {
+				// 	if (mutate()) {
+				// 		nextSeed.tetraploid = !nextSeed.tetraploid;
+				// 	}
+				// }
+
 				seedsInRegion.add(nextSeed);
 			}
 		}
 		return seedsInRegion;
 	}
-	
+
+	static boolean mutate() {
+		Random random = new Random();
+		if (random.nextInt(MUTATION_PROBABILITY + 1) == MUTATION_PROBABILITY) {
+			return true;
+		}
+		return false;
+	}
 	
 	static double distanceBetweenSeeds(seed a, seed b) {
 		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
