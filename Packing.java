@@ -69,6 +69,8 @@ public class Packing {
 		return locations;
 	}
 
+	
+
 	public static void treeExpansion(ArrayList<Position> trees, Position start, double width, double height, ArrayList<Position> board) {
 
 		if (start == null) {
