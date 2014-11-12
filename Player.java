@@ -11,8 +11,8 @@ public class Player extends watermelon.sim.Player {
 	// static double distotree = 2.2;
 	// static double distoseed = 1.01;
 	static double distToWall= 1.0;
-	static double distToSeed = 2.0000001;
-	static double distToTree = 2.0000001;
+	static double distToSeed = 2.000000000000000000001;
+	static double distToTree = 2.000000000000000000001;
 	static double SEED_RADIUS = 1.0;
 	static double MARGIN = 2.0;
 	static int MUTATION_PROBABILITY = 5; // 1 in every *MUTATION_PROBABILITY* seeds within the margin gets mutated
