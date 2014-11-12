@@ -10,9 +10,9 @@ public class Player extends watermelon.sim.Player {
 	// static double distowall = 2.1;
 	// static double distotree = 2.2;
 	// static double distoseed = 1.01;
-	static final double distowall = 1.0;
-	static final double distotree = 2.0;
-	static final double distoseed = 2.0;
+	static double distToWall= 1.0;
+	static double distToSeed = 2.0000001;
+	static double distToTree = 2.0000001;
 	static double SEED_RADIUS = 1.0;
 	static double MARGIN = 2.0;
 	static int MUTATION_PROBABILITY = 5; // 1 in every *MUTATION_PROBABILITY* seeds within the margin gets mutated
@@ -27,6 +27,15 @@ public class Player extends watermelon.sim.Player {
 	private static final int childPolicy = 1;
 	private static final int mutationProbability = 5; // 1 in *mutationProbability* boundary seeds will be flipped
 	/////////////////////////////////////////////////////////////////////////////////////
+	static boolean closeToTree(Pair p, ArrayList<Pair> treeLst){
+		for(Pair q : treeLst){
+			if(Math.sqrt((p.x - q.x) * (p.x - q.x) + (p.y - q.y) * (p.y - q.y)) < distToTree){
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// Generation and Individual classes
 	// Generation class 
 	class Generation {
@@ -140,7 +149,7 @@ public class Player extends watermelon.sim.Player {
 				}
 				for (int j = 0; j < board.size(); j++) {
 					if (j != i && ((board.get(i).tetraploid && !board.get(j).tetraploid) || 
-						(!board.get(i).tetraploid && board.get(j).tetraploid))) {
+							(!board.get(i).tetraploid && board.get(j).tetraploid))) {
 						difdis = difdis + Math.pow(distanceBetweenSeeds(board.get(i), board.get(j)), -2);
 					}
 				}
@@ -173,7 +182,7 @@ public class Player extends watermelon.sim.Player {
 				// board = mutate(board, xBoundary, yBoundary);
 				children.add(new Individual(board));
 			}
-			
+
 			return children;
 		}
 		// ArrayList<seed> mutate(ArrayList<seed> board, int xBoundary, int yBoundary) {
@@ -251,9 +260,9 @@ public class Player extends watermelon.sim.Player {
 		ArrayList<Position> trees = new ArrayList<Position>();
 		for (Pair p : treeList)
 			trees.add(new Position(p.x, p.y));
-		
+
 		ArrayList<Position> locations = new ArrayList<Position>();
-		
+
 		for (int i = 0; i < 1000; i++) {
 			ArrayList<Position> workingLocations = new ArrayList<Position>();
 			Packing.treeExpansion(trees, null, boardWidth, boardHeight, workingLocations);
@@ -261,14 +270,206 @@ public class Player extends watermelon.sim.Player {
 				locations = new ArrayList<Position>(workingLocations);
 			}
 		}
-		
+
 		Packing.treeExpansionBreadthFirst(trees, null, boardWidth, boardHeight, locations);
+
+		Packing.pullToTrees(locations, trees, boardWidth, boardHeight);
+		fillInSpace(trees,boardWidth,boardHeight,locations);	
 
 		//ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
 		System.out.println("Board has " + locations.size() + " trees.");
 		return generateRandomBoardFromPositions(locations);
 	}
-	
+
+
+	public static void fillInSpace(ArrayList<Position> trees, double width, double height, ArrayList<Position> board)
+	{
+		Position nextSeed = getNextAvailableSeed(board, treeList, 1,width,height);
+		while(nextSeed != null){
+			board.add(nextSeed);
+			nextSeed = getNextAvailableSeed(board, treeList, 1,width,height);
+		}
+
+		nextSeed = getNextAvailableSeed(board, treeList, 0,width,height);
+		while(nextSeed != null){
+			board.add(nextSeed);
+			nextSeed = getNextAvailableSeed(board, treeList, 0,width,height);
+		}
+
+		nextSeed = getNextAvailableSeed(board, treeList, 2,width,height);
+		while(nextSeed != null){
+			board.add(nextSeed);
+			nextSeed = getNextAvailableSeed(board, treeList, 2,width,height);}
+	}
+
+	public static Position getNextAvailableSeed(ArrayList<Position> board, ArrayList<Pair> treeLst, int direction,double width, double height){
+		if(board == null || board.size() == 0){
+			System.out.println("empty List");
+			return null;
+		}
+		Position minSeed = null; 
+		for(Position s : board){
+			Position temp = null;
+			switch (direction){
+			case 0:
+				temp = getNewSeedDown(s, board, treeList,width,height);
+				// curernt seed has avaiable neighboor
+				if(temp != null){
+					if(minSeed == null || minSeed.y < temp.y){
+						minSeed = temp;
+					}
+				}
+				break;
+			case 1:
+				temp = getNewSeedUp(s, board, treeList,width,height);
+				// curernt seed has avaiable neighboor
+				if(temp != null){
+					if(minSeed == null || minSeed.y < temp.y){
+						minSeed = temp;
+					}
+				}
+				break;
+			case 2:
+				temp = getNewSeedLeft(s, board, treeList,width,height);
+				// curernt seed has avaiable neighboor
+				if(temp != null){
+					if(minSeed == null || minSeed.y < temp.y){
+						minSeed = temp;
+					}
+				}
+				break;
+			}
+		}
+		if(minSeed == null){
+			System.out.println("minSeed is null");
+		} else {
+			System.out.println("minSeed: (" + minSeed.x + "):(" + minSeed.y + ")");
+		}
+		return minSeed;
+	}
+
+	public static Position getNewSeedDown(Position s2, ArrayList<Position> board, ArrayList<Pair> treeLst,double width, double height){
+		//System.out.println(seedLst.size());
+		// two set of angles
+		double x, y;
+		// check with increasing height order
+		for(int i = 0; i <= 180; i += 1){
+			x = s2.x + distToSeed * Math.cos(Math.toRadians((360 + 180 - i) % 360));
+			y = s2.y + -distToSeed * Math.sin(Math.toRadians((360 + 180 - i) % 360));
+			// if left node is valid
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position s : board){
+					if(distance(s, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x, y);
+				}        
+			}
+			// if right is valid
+			x = s2.x + distToSeed * Math.cos(Math.toRadians(i));
+			y = s2.y + -distToSeed * Math.sin(Math.toRadians(i));
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position s : board){
+					if(distance(s, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x, y);
+				}        
+			}
+		}
+		return null;
+	}
+
+	public static Position getNewSeedUp(Position s, ArrayList<Position> board, ArrayList<Pair> treeLst,double width, double height){
+		//System.out.println(seedLst.size());
+		// two set of angles
+		double x, y;
+		// check with increasing height order
+		for(int i = 0; i <= 180; i += 1){
+			x = s.x + distToSeed * Math.cos(Math.toRadians((90 - i + 360) % 360));
+			y = s.y + -distToSeed * Math.sin(Math.toRadians((90 - i + 360) % 360));
+			// if right node is valid
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position sd : board){
+					if(distance(sd, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x,y);//rnd.nextInt(2) == 0 ? true : false);
+				}        
+			}
+			// if right is valid
+			x = s.x + distToSeed * Math.cos(Math.toRadians((90 + i) % 360));
+			y = s.y + -distToSeed * Math.sin(Math.toRadians((90 + i) % 360));
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position sd : board){
+					if(distance(sd, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x,y);//rnd.nextInt(2) == 0 ? true : false);
+				}        
+			}
+		}
+		return null;
+	}
+
+
+	public static Position getNewSeedLeft(Position s, ArrayList<Position> board, ArrayList<Pair> treeLst,double width, double height){
+		//System.out.println(seedLst.size());
+		// two set of angles
+		double x, y;
+		// check with increasing height order
+		for(int i = 0; i <= 180; i += 1){
+			x = s.x + distToSeed * Math.cos(Math.toRadians(180-i));
+			y = s.y + -distToSeed * Math.sin(Math.toRadians(180-i));
+			// if left node is valid
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position sd : board){
+					if(distance(sd, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x,y);//rnd.nextInt(2) == 0 ? true : false);
+				}        
+			}
+			// if right is valid
+			x = s.x + distToSeed * Math.cos(Math.toRadians(180+i));
+			y = s.y + -distToSeed * Math.sin(Math.toRadians(180+i));
+			if(x >= distToWall && x <= width - distToWall && y >= distToWall && y <= height - distToWall && !closeToTree(new Pair(x, y), treeLst)){
+				boolean flag = false;
+				for(Position sd : board){
+					if(distance(sd, new Pair(x, y)) < 2.0){
+						flag = true;
+						break;
+					}
+				}
+				if(!flag){
+					return new Position(x,y);//rnd.nextInt(2) == 0 ? true : false);
+				}        
+			}
+		}
+		return null;
+	}
+
+
 	public ArrayList<seed> generateRandomBoardFromPositions(ArrayList<Position> positions) {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
 		Random random = new Random();
@@ -291,19 +492,19 @@ public class Player extends watermelon.sim.Player {
 			// }
 			int identity = random.nextInt(2);
 			switch (identity) {
-				case 0:
-					seedlist.add(new seed(x, y, false));
-					break;
-				case 1:
-					seedlist.add(new seed(x, y, true));
-					break;
-				default:
-					break;
+			case 0:
+				seedlist.add(new seed(x, y, false));
+				break;
+			case 1:
+				seedlist.add(new seed(x, y, true));
+				break;
+			default:
+				break;
 			}
 		}
 		return seedlist;
 	}
-	
+
 	public ArrayList<seed> getSeedsInRegion(ArrayList<seed> board, double minX, double maxX, double minY, double maxY) {
 		ArrayList<seed> seedsInRegion = new ArrayList<seed>();
 		for (seed nextSeed : board) {
@@ -322,6 +523,7 @@ public class Player extends watermelon.sim.Player {
 		}
 		return seedsInRegion;
 	}
+
 	static boolean mutate() {
 		Random random = new Random();
 		if (random.nextInt(MUTATION_PROBABILITY + 1) == MUTATION_PROBABILITY) {
@@ -329,13 +531,13 @@ public class Player extends watermelon.sim.Player {
 		}
 		return false;
 	}
-	
+
 	static double distanceBetweenSeeds(seed a, seed b) {
 		return Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));
 	}
 	public void init() {
 	}
-	static double distance(seed tmp, Pair pair) {
+	static double distance(Position tmp, Pair pair) {
 		return Math.sqrt((tmp.x - pair.x) * (tmp.x - pair.x) + (tmp.y - pair.y) * (tmp.y - pair.y));
 	}
 	static double distance(seed a, Point b) {
