@@ -22,9 +22,9 @@ public class Player extends watermelon.sim.Player {
 	static ArrayList<Pair> treeList;
 	static int k;
 	static Individual best;
-	private static final int generationSize = 1;
-	private static final int numGenerations = 0;
-	private static final int childPolicy = 1;
+	private static final int generationSize = 20;
+	private static final int numGenerations = 20;
+	private static final int childPolicy = 50;
 	private static final int mutationProbability = 5; // 1 in *mutationProbability* boundary seeds will be flipped
 	/////////////////////////////////////////////////////////////////////////////////////
 	static boolean closeToTree(Pair p, ArrayList<Pair> treeLst){
@@ -258,26 +258,47 @@ public class Player extends watermelon.sim.Player {
 	public ArrayList<seed> generateRandomBoard() {
 		ArrayList<seed> seedlist = new ArrayList<seed>();
 		ArrayList<Position> trees = new ArrayList<Position>();
+
 		for (Pair p : treeList)
 			trees.add(new Position(p.x, p.y));
 
 		ArrayList<Position> locations = new ArrayList<Position>();
 
-		for (int i = 0; i < 1000; i++) {
-			ArrayList<Position> workingLocations = new ArrayList<Position>();
-			Packing.treeExpansion(trees, null, boardWidth, boardHeight, workingLocations);
-			if (workingLocations.size() > locations.size()) {
-				locations = new ArrayList<Position>(workingLocations);
+		if (trees.size() > 0) {
+			for (int i = 0; i < 1000; i++) {
+				ArrayList<Position> workingLocations = new ArrayList<Position>();
+				Packing.treeExpansion(trees, null, boardWidth, boardHeight, workingLocations);
+				if (workingLocations.size() > locations.size()) {
+					locations = new ArrayList<Position>(workingLocations);
+				}
 			}
+
+
+			Packing.treeExpansionBreadthFirst(trees, null, boardWidth, boardHeight, locations);
+
+			Packing.pullToTrees(locations, trees, boardWidth, boardHeight);
+			fillInSpace(trees,boardWidth,boardHeight,locations);	
+
+			ArrayList<Position> hexLocations = Packing.hexagonal(trees, boardWidth, boardHeight);
+			Packing.treeExpansionBreadthFirst(trees, null, boardWidth, boardHeight, hexLocations);
+			Packing.pullToTrees(hexLocations, trees, boardWidth, boardHeight);
+			fillInSpace(trees, boardWidth, boardHeight, hexLocations);
+			if (hexLocations.size() > locations.size()) {
+				System.out.println("hex packing chosen");
+				locations = hexLocations;
+			}
+
+			//ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
+			System.out.println("Board has " + locations.size() + " seeds.");
 		}
 
-		Packing.treeExpansionBreadthFirst(trees, null, boardWidth, boardHeight, locations);
+		else {
+			locations = Packing.hexagonal(trees, boardWidth, boardHeight);
+			fillInSpace(trees,boardWidth,boardHeight,locations);
+			System.out.println("Board has " + locations.size() + " seeds.");
+		}
 
-		Packing.pullToTrees(locations, trees, boardWidth, boardHeight);
-		fillInSpace(trees,boardWidth,boardHeight,locations);	
-
-		//ArrayList<Position> locations = Packing.hexagonal(trees, boardWidth, boardHeight);
-		System.out.println("Board has " + locations.size() + " trees.");
+		
 		return generateRandomBoardFromPositions(locations);
 	}
 
